@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome | AI-Based Study Time Optimizer</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --glass: rgba(255,255,255,0.12);
+            --glass-border: rgba(255,255,255,0.14);
+            --text: #ffffff;
+            --muted: #eef4f7;
+            --accent: #00ffc8;
+            --accent2: #7cf7ff;
+            --dark: #0b1830;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #0b1020;
+        }
+
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            background:
+                linear-gradient(rgba(10,15,30,0.4), rgba(10,15,30,0.4)),
+                url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+            animation: zoom 10s infinite alternate;
+        }
+
+        @keyframes zoom {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: rgba(0,0,0,0.55);
+        }
+
+        .main-wrap {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card-box {
+            text-align: center;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 28px;
+            backdrop-filter: blur(12px);
+            max-width: 850px;
+            width: 100%;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            margin: auto;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            color: var(--dark);
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,255,200,0.25);
+        }
+
+        h1 {
+            font-size: 46px;
+            font-weight: bold;
+            background: linear-gradient(90deg,var(--accent),#fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 14px;
+        }
+
+        p {
+            margin-top: 10px;
+            font-size: 17px;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        .feature-box {
+            margin-top: 25px;
+        }
+
+        .mini-card {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.10);
+            padding: 18px;
+            border-radius: 18px;
+            height: 100%;
+        }
+
+        .mini-card i {
+            color: var(--accent);
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .mini-card h6 {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .mini-card p {
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            margin-top: 25px;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 30px;
+            background: var(--accent);
+            color: black;
+            border: none;
+            transition: 0.3s;
+            font-weight: 700;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+<div class="bg"></div>
+<div class="overlay"></div>
+
+<div class="main-wrap">
+    <div class="card-box">
+        <div class="logo">
+            <i class="fas fa-brain"></i>
+        </div>
+
+        <h1>AI-Based Study Time Optimizer</h1>
+
+        <p>
+            Predict your productivity using AI and improve your study routine with smart suggestions,
+            insights, and performance analysis.
+        </p>
+
+        <div class="row feature-box">
+            <div class="col-md-4">
+                <div class="mini-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h6>AI Prediction</h6>
+                    <p>Get productivity score instantly</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mini-card">
+                    <i class="fas fa-lightbulb"></i>
+                    <h6>Smart Suggestions</h6>
+                    <p>Improve your study routine</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mini-card">
+                    <i class="fas fa-volume-up"></i>
+                    <h6>Voice Feedback</h6>
+                    <p>AI explains your result</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="/home">
+            <button class="btn-start">Enter Application 🚀</button>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

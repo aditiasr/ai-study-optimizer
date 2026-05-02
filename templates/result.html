@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --glass: rgba(255,255,255,0.12);
+            --glass-dark: rgba(0,0,0,0.35);
+            --glass-border: rgba(255,255,255,0.14);
+            --text: #ffffff;
+            --muted: #eef4f7;
+            --accent: #00ffc8;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(10,15,30,0.5), rgba(10,15,30,0.5)),
+                url("https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80") center/cover no-repeat fixed;
+            color: var(--text);
+            font-family: Arial, sans-serif;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .page-title h2 {
+            font-size: 34px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-title p {
+            color: var(--muted);
+        }
+
+        .usage-box {
+            margin-bottom: 18px;
+            background: rgba(0,255,200,0.10);
+            border: 1px solid rgba(0,255,200,0.25);
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .main-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 25px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .score-box {
+            background: var(--glass-dark);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .score-label {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .score-number {
+            font-size: 56px;
+            font-weight: bold;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .level-text {
+            margin-top: 12px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .info-card, .chart-card, .progress-card {
+            background: var(--glass-dark);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 18px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .info-card h4, .chart-card h4, .progress-card h4 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .info-card p, .info-card li {
+            color: var(--muted);
+        }
+
+        .chart-wrap {
+            max-width: 260px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .chart-center-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        .chart-center-text .main-value {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .chart-center-text .sub-value {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .score-legend {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .score-legend p {
+            margin-bottom: 6px;
+            color: var(--muted);
+        }
+
+        .score-legend strong {
+            color: white;
+        }
+
+        #historyChart {
+            max-height: 260px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .btn-custom {
+            border-radius: 14px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-custom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 14px rgba(0,255,200,0.25);
+        }
+
+        .bottom-btn {
+            text-align: center;
+            margin-top: 24px;
+            margin-bottom: 40px;
+        }
+
+        .badge-box {
+            background: rgba(0,255,200,0.12);
+            border: 1px solid rgba(0,255,200,0.25);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .streak-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .big-line {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .dashboard-card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .dashboard-label {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .dashboard-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chatbot-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 18px;
+            padding: 18px;
+            margin-top: 24px;
+        }
+
+        .chat-messages {
+            background: rgba(0,0,0,0.25);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 120px;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .chat-user {
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .chat-bot {
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .score-number { font-size: 44px; }
+            .page-title h2 { font-size: 28px; }
+            .chart-center-text .main-value { font-size: 28px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="page-title">
+        <h2>📊 Your Productivity Result</h2>
+        <p>Here is your AI-powered performance summary</p>
+    </div>
+
+    <div class="usage-box">
+        {% if paid_user %}
+            <strong>✅ Premium Access Active</strong>
+        {% else %}
+            <strong>Remaining free uses: {{ remaining_free }}</strong>
+        {% endif %}
+    </div>
+
+    <div class="main-card">
+
+        <!-- TOP ROW: SCORE LEFT + RECENT PROGRESS RIGHT -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="score-box">
+                    <div class="score-label">Your Productivity Score</div>
+                    <div class="score-number" id="counter">0</div>
+                    <div class="level-text">{{ level }}</div>
+                    <p class="mt-3 mb-0">{{ message }}</p>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="progress-card">
+                    <h4 class="text-center mb-3">📉 Recent Progress</h4>
+                    {% if history %}
+                        <canvas id="historyChart"></canvas>
+                    {% else %}
+                        <p class="text-center mb-0" style="color: var(--muted);">No progress data available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- WEEKLY DASHBOARD -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="dashboard-card">
+                    <div class="dashboard-label">Total Attempts</div>
+                    <div class="dashboard-value">{{ total_attempts }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="dashboard-card">
+                    <div class="dashboard-label">Average Score</div>
+                    <div class="dashboard-value">{{ average_score }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="dashboard-card">
+                    <div class="dashboard-label">Best Score</div>
+                    <div class="dashboard-value">{{ best_score }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="dashboard-card">
+                    <div class="dashboard-label">Trend</div>
+                    <div class="dashboard-value" style="font-size:16px;">{{ trend }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN INFO ROW -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="info-card">
+                    <h4>📌 Recommended Plan</h4>
+                    <p class="mb-2">📚 Study Hours: <strong>{{ recommended_study }}</strong></p>
+                    <p class="mb-0">😴 Sleep Hours: <strong>{{ recommended_sleep }}</strong></p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="info-card">
+                    <h4>🧠 AI Insight</h4>
+                    <p class="mb-0">{{ explanation }}</p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="badge-box">
+                    <h4>🏅 Your Badge</h4>
+                    <div class="big-line">{{ badge }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="streak-box">
+                    <h4>🔥 Current Streak</h4>
+                    <div class="big-line">{{ streak }} High-Score Day(s)</div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="info-card">
+                    <h4>💡 Suggestions</h4>
+                    <ul>
+                        {% for s in suggestions %}
+                        <li>{{ s }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h4 class="text-center mb-3">📈 Score Chart</h4>
+
+                    <div class="chart-wrap">
+                        <canvas id="myChart"></canvas>
+
+                        <div class="chart-center-text">
+                            <div class="main-value">{{ prediction }}</div>
+                            <div class="sub-value">Score</div>
+                        </div>
+                    </div>
+
+                    <div class="score-legend">
+                        <p><strong>Score:</strong> {{ prediction }}%</p>
+                        <p><strong>Remaining:</strong> {{ 100 - prediction }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHATBOT -->
+        <div class="chatbot-box">
+            <h4>🤖 Ask AI Study Assistant</h4>
+            <div id="chatMessages" class="chat-messages">
+                <div class="chat-bot"><strong>AI:</strong> Hello! Ask me about study, sleep, focus, distractions, or productivity.</div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="chatInput" class="form-control" placeholder="Ask something...">
+                <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-btn">
+        <div class="action-buttons">
+            <a href="/input">
+                <button class="btn btn-success btn-custom">🔁 Try Again</button>
+            </a>
+
+            <a href="/download-report">
+                <button class="btn btn-info btn-custom">📄 Download Report</button>
+            </a>
+
+            <a href="/history">
+                <button class="btn btn-warning btn-custom">📜 View History</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+var ctx = document.getElementById('myChart').getContext('2d');
+let safePrediction = Math.min({{ prediction }}, 100);
+let remainingPrediction = Math.max(0, 100 - {{ prediction }});
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Score', 'Remaining'],
+        datasets: [{
+            data: [safePrediction, remainingPrediction],
+            backgroundColor: ['#00ffc8', '#1f1f1f'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '72%',
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'white'
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% if history %}
+<script>
+var ctx2 = document.getElementById('historyChart').getContext('2d');
+
+new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: Array.from({length: {{ history|length }}}, (_, i) => 'Try ' + (i + 1)),
+        datasets: [{
+            label: 'Progress',
+            data: {{ history|tojson }},
+            borderColor: '#00ffc8',
+            backgroundColor: 'rgba(0,255,200,0.12)',
+            tension: 0.35,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'white'
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: 'white' },
+                grid: { color: 'rgba(255,255,255,0.08)' }
+            },
+            y: {
+                ticks: { color: 'white' },
+                grid: { color: 'rgba(255,255,255,0.08)' }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+
+<script>
+let count = 0;
+let target = {{ prediction }};
+let counter = document.getElementById("counter");
+
+let update = setInterval(() => {
+    if (count >= target) {
+        counter.innerText = target;
+        clearInterval(update);
+    } else {
+        count += 1;
+        counter.innerText = count;
+    }
+}, 20);
+</script>
+
+<script>
+let speech = new SpeechSynthesisUtterance("{{ message }} {{ explanation }}");
+speech.rate = 1;
+speech.pitch = 1.1;
+speechSynthesis.cancel();
+speechSynthesis.speak(speech);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+if ({{ prediction }} > 75) {
+    confetti({
+        particleCount: 150,
+        spread: 100
+    });
+}
+</script>
+
+<script>
+async function sendMessage() {
+    let input = document.getElementById("chatInput");
+    let message = input.value.trim();
+    if (!message) return;
+
+    let chatBox = document.getElementById("chatMessages");
+    chatBox.innerHTML += `<div class="chat-user"><strong>You:</strong> ${message}</div>`;
+
+    let response = await fetch("/chatbot", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: message })
+    });
+
+    let data = await response.json();
+    chatBox.innerHTML += `<div class="chat-bot"><strong>AI:</strong> ${data.reply}</div>`;
+
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+</script>
+
+</body>
+</html>
