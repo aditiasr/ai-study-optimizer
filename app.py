@@ -2,71 +2,65 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import pickle
 import pandas as pd
 import os
-import warnings
 from datetime import datetime
-from pathlib import Path
-
-try:
-    import razorpay
-except Exception:
-    razorpay = None
+import razorpay
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "study-ai-assessment-secret")
+app.secret_key = os.environ.get("SECRET_KEY", "secret123")
 
 # ------------------ RAZORPAY CONFIG ------------------
 RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
 
 razorpay_client = None
-if razorpay and RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
     razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 # ------------------ SETTINGS ------------------
-FREE_USES = int(os.environ.get("FREE_USES", 100))
-ASSESSMENT_MODE = os.environ.get("ASSESSMENT_MODE", "true").lower() == "true"
-PREMIUM_PRICE_PAISE = 9900   # ₹99
+FREE_USES = 3
+PREMIUM_PRICE_PAISE = 9900
 CURRENCY = "INR"
 
 history = []
 latest_report = {}
-BASE_DIR = Path(__file__).resolve().parent
-HISTORY_FILE = BASE_DIR / "user_history.csv"
+HISTORY_FILE = "user_history.csv"
 
 # ------------------ LOAD MODEL ------------------
-MODEL_PATH = BASE_DIR / "model.pkl"
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    model = pickle.load(open(MODEL_PATH, "rb"))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+
+with open(MODEL_PATH, "rb") as file:
+    model = pickle.load(file)
 
 # ------------------ HELPERS ------------------
 def get_usage():
     if "use_count" not in session:
         session["use_count"] = 0
 
-    # Assessment mode keeps the demo fully usable while payment feature remains available.
-    if ASSESSMENT_MODE or "127.0.0.1" in request.host or "localhost" in request.host:
-        paid_user = True
-    else:
-        paid_user = session.get("paid_user", False)
+    if "paid_user" not in session:
+        session["paid_user"] = False
 
-    return session["use_count"], paid_user
+    use_count = session.get("use_count", 0)
+    paid_user = session.get("paid_user", False)
+
+    return use_count, paid_user
 
 
 def get_remaining_free():
-    use_count, _ = get_usage()
+    use_count, paid_user = get_usage()
+
+    if paid_user:
+        return "Unlimited"
+
     return max(FREE_USES - use_count, 0)
 
-# ------------------ RESET ROUTE ------------------
-@app.route("/health")
-def health():
-    return jsonify({"status": "ok", "project": "AI-Based Study Time Optimizer"})
 
+# ------------------ RESET ROUTE ------------------
 @app.route("/reset-access")
 def reset_access():
-    session["use_count"] = 0
-    session["paid_user"] = False
+    session.clear()
     return redirect(url_for("home"))
+
 
 # ------------------ BASIC ROUTES ------------------
 @app.route("/")
@@ -107,6 +101,7 @@ def history_page():
 
     return render_template("history.html", records=records)
 
+
 # ------------------ PAYMENT PAGE ------------------
 @app.route("/payment")
 def payment():
@@ -121,6 +116,7 @@ def payment():
         razorpay_key_id=RAZORPAY_KEY_ID
     )
 
+
 # ------------------ CREATE RAZORPAY ORDER ------------------
 @app.route("/create-razorpay-order", methods=["POST"])
 def create_razorpay_order():
@@ -132,7 +128,7 @@ def create_razorpay_order():
     if not razorpay_client:
         return jsonify({
             "success": False,
-            "message": "Razorpay keys missing. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET."
+            "message": "Razorpay keys are not configured on the server."
         }), 500
 
     try:
@@ -158,12 +154,13 @@ def create_razorpay_order():
             "amount": order["amount"],
             "currency": order["currency"],
             "key": RAZORPAY_KEY_ID,
-            "name": "AI Based Study Time Optimizer",
+            "name": "AI-Based Study Time Optimizer",
             "description": "Premium Access Unlock"
         })
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
 
 # ------------------ VERIFY PAYMENT ------------------
 @app.route("/verify-payment", methods=["POST"])
@@ -188,12 +185,15 @@ def verify_payment():
         }
 
         razorpay_client.utility.verify_payment_signature(params_dict)
+
         session["paid_user"] = True
+        session["use_count"] = 0
 
         return jsonify({"success": True, "redirect_url": url_for("input_page")})
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 400
+
 
 # ------------------ DOWNLOAD REPORT ------------------
 @app.route("/download-report")
@@ -239,6 +239,7 @@ Suggestions:
         headers={"Content-disposition": "attachment; filename=study_time_report.txt"}
     )
 
+
 # ------------------ CHATBOT ------------------
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
@@ -270,6 +271,7 @@ def chatbot():
 
     return jsonify({"reply": reply})
 
+
 # ------------------ PREDICT ------------------
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -277,32 +279,45 @@ def predict():
 
     use_count, paid_user = get_usage()
 
-    # Payment gate
     if not paid_user and use_count >= FREE_USES:
         return redirect(url_for("payment"))
 
     try:
-        sleep = float(request.form.get("sleep_hours", 0))
-        wake = float(request.form.get("wakeup_time", 0))
-        study = float(request.form.get("study_hours", 0))
-        prev = float(request.form.get("previous_study_hours", 0))
-        screen = float(request.form.get("screen_time", 0))
-        distract = float(request.form.get("distractions", 0))
-        energy = float(request.form.get("energy_level", 0))
-        focus = float(request.form.get("focus_level", 0))
-        break_time = float(request.form.get("break_time", 0))
-        exercise = float(request.form.get("exercise_time", 0))
+        sleep = float(request.form["sleep_hours"])
+        wake = float(request.form["wakeup_time"])
+        study = float(request.form["study_hours"])
+        prev = float(request.form["previous_study_hours"])
+        screen = float(request.form["screen_time"])
+        distract = float(request.form["distractions"])
+        energy = float(request.form["energy_level"])
+        focus = float(request.form["focus_level"])
+        break_time = float(request.form["break_time"])
+        exercise = float(request.form["exercise_time"])
 
-        feature_order = ["Sleep_Hours", "Wakeup_Time", "Study_Hours", "Previous_Study_Hours", "Screen_Time", "Distractions", "Energy_Level", "Focus_Level", "Break_Time", "Exercise_Time"]
-        data = pd.DataFrame([[sleep, wake, study, prev, screen, distract, energy, focus, break_time, exercise]], columns=feature_order)
-        score = round(float(model.predict(data)[0]), 2)
-        score = max(0, min(100, score))
+        feature_names = [
+            "Sleep_Hours",
+            "Wakeup_Time",
+            "Study_Hours",
+            "Previous_Study_Hours",
+            "Screen_Time",
+            "Distractions",
+            "Energy_Level",
+            "Focus_Level",
+            "Break_Time",
+            "Exercise_Time"
+        ]
+
+        input_df = pd.DataFrame([[
+            sleep, wake, study, prev, screen,
+            distract, energy, focus, break_time, exercise
+        ]], columns=feature_names)
+
+        score = round(float(model.predict(input_df)[0]), 2)
 
     except Exception as e:
-        return render_template("result.html", prediction=0, level="Unable to predict", message=f"Please check input values. Error: {e}", history=history, use_count=session.get("use_count", 0), paid_user=paid_user, remaining_free=get_remaining_free(), recommended_study=0, recommended_sleep=0, explanation="The application is working, but prediction failed because the submitted values/model input format needs correction.", streak=0, badge="Try Again", average_score=0, best_score=0, trend="Not available", total_attempts=len(history), suggestions=["Go back and enter valid numeric values."])
+        return f"Prediction error: {str(e)}"
 
-    # Successful prediction ke baad hi count increase
-    session["use_count"] += 1
+    session["use_count"] = session.get("use_count", 0) + 1
 
     history.append(score)
     if len(history) > 5:
@@ -342,17 +357,17 @@ def predict():
 
     suggestions = []
     if sleep < 6:
-        suggestions.append("Increase sleep to at least 7 hours for better memory and concentration.")
+        suggestions.append("Increase sleep.")
     if screen > 5:
-        suggestions.append("Reduce non-study screen time, especially before sleeping.")
+        suggestions.append("Reduce screen time.")
     if distract > 5:
-        suggestions.append("Use a distraction-free study space and keep your phone away during focus sessions.")
+        suggestions.append("Reduce distractions.")
     if focus < 5:
-        suggestions.append("Use 25–30 minute focused study blocks with short breaks.")
+        suggestions.append("Improve focus.")
     if exercise < 20:
-        suggestions.append("Add at least 20 minutes of light exercise or walking daily.")
+        suggestions.append("Do exercise.")
     if not suggestions:
-        suggestions.append("Great routine! Maintain consistency and keep tracking your progress.")
+        suggestions.append("Great routine!")
 
     streak = 0
     for item in reversed(history):
@@ -416,14 +431,16 @@ def predict():
     else:
         new_entry.to_csv(HISTORY_FILE, index=False)
 
+    updated_use_count, updated_paid_user = get_usage()
+
     return render_template(
         "result.html",
         prediction=score,
         level=level,
         message=msg,
         history=history,
-        use_count=session["use_count"],
-        paid_user=paid_user,
+        use_count=updated_use_count,
+        paid_user=updated_paid_user,
         remaining_free=get_remaining_free(),
         recommended_study=recommended_study,
         recommended_sleep=recommended_sleep,
@@ -436,6 +453,7 @@ def predict():
         total_attempts=total_attempts,
         suggestions=suggestions
     )
+
 
 # ------------------ RUN ------------------
 if __name__ == "__main__":
