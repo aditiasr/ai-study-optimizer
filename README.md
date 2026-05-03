@@ -1,34 +1,1 @@
-# AI-Based Study Time Optimizer
-
-A full-stack machine learning web application that predicts a student's productivity score based on lifestyle and study habits.
-
-## Features
-- Flask backend with ML model integration
-- Multi-page responsive frontend
-- Productivity score prediction
-- Smart AI insights and suggestions
-- Progress/history tracking
-- Chart-based result visualization
-- Built-in study assistant chatbot
-- Optional Razorpay premium flow for demo/extension
-
-## Tech Stack
-Python, Flask, Pandas, Scikit-learn, HTML, CSS, Bootstrap, Chart.js
-
-## Run Locally
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Open: http://127.0.0.1:10000
-
-## Deployment
-Build command:
-```bash
-pip install -r requirements.txt
-```
-Start command:
-```bash
-gunicorn app:app
-```
+\# 🎓 AI-Based Study Time Optimizer🚀 A Smart AI-Powered Web Application to Predict and Improve Student Productivity\---\## 📌 OverviewAI-Based Study Time Optimizer is a full-stack web application that uses Machine Learning to analyze a student’s daily habits and predict a productivity score.It helps users understand how their lifestyle affects their study efficiency and provides actionable insights to improve performance.\---\## ✨ Key Features\* 🔮 Predict productivity score using Machine Learning\* 📊 Personalized study \& lifestyle recommendations\* ⏳ Free usage limit system (3 attempts)\* 💳 Premium access system with Razorpay integration\* 📈 Performance tracking and history\* 🎨 Clean, modern, and responsive UI\* 🌐 Fully deployed live web application\---\## 🧠 Machine Learning Details\* 📌 Model Used: Random Forest Regression\* 📊 Dataset Size: 5000+ records (custom generated)\### Input Features:\* Sleep Hours\* Wakeup Time\* Study Hours\* Previous Study Hours\* Screen Time\* Distractions\* Energy Level\* Focus Level\* Break Time\* Exercise Time\---\## 🌐 Live Demo👉 https://ai-study-optimizer.onrender.com\---\## 💳 Payment IntegrationThis project includes Razorpay payment gateway integration.⚠️ Note:\* Currently running in \*\*Test Mode (Demo Environment)\*\*\* Real payment can be enabled using live API keys after KYC approval\---\## 🛠️ Tech Stack\* 🐍 Python (Flask)\* 🎨 HTML, CSS, Bootstrap\* 🤖 Machine Learning (Scikit-learn)\* 📊 Pandas, NumPy\* 💳 Razorpay API\* ☁️ Render (Deployment)\---\## 📂 Project Structure```study\_ai\_app/│├── app.py├── model.pkl├── requirements.txt├── .python-version├── Procfile├── user\_history.csv├── templates/│   ├── welcome.html│   ├── home.html│   ├── input.html│   ├── result.html│   ├── payment.html│   └── history.html```\---\## ⚙️ How to Run Locally```bashgit clone https://github.com/aditiasr/ai-study-optimizer.gitcd ai-study-optimizerpip install -r requirements.txtpython app.py```Open in browser:http://127.0.0.1:10000\---\## 📈 Future Enhancements\* 🔐 User Authentication (Login/Signup)\* 🗄️ Database Integration (MongoDB/MySQL)\* 💰 Real Payment Verification System\* 🤖 AI Chatbot Improvements\* 📱 Mobile Application Version\---\## 👩‍💻 Author\*\*Aditi Singh\*\*B.Tech - Electronics \& Communication Engineering📍 India\---\## ⭐ ConclusionThis project demonstrates the integration of Machine Learning, Full-Stack Development, and Payment Systems into a real-world productivity solution.It is designed to be scalable, user-friendly, and impactful for students aiming to optimize their study habits.\---⭐ If you like this project, give it a star on GitHub!
